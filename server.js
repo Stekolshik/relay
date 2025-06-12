@@ -8,8 +8,13 @@ const app = express();
 app.get('/tmdb', async (req, res) => {
   try {
     const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ error: 'Missing required parameter "url"' });
+    }
+    
     const apiKey = process.env.TMDB_API_KEY;
-    const fullUrl = `https://api.themoviedb.org/3${url}&api_key=${apiKey}`;
+    const separator = url.includes('?') ? '&' : '?';
+    const fullUrl = `https://api.themoviedb.org/3${url}${separator}api_key=${apiKey}`;
 
     const response = await fetch(fullUrl);
     const data = await response.json();
