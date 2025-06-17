@@ -1,12 +1,12 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import cors from 'cors'; // Добавляем CORS
+import cors from 'cors'; 
 
 dotenv.config();
 const app = express();
 
-// Разрешаем CORS
+
 app.use(cors());
 
 app.get('/tmdb', async (req, res) => {
@@ -16,12 +16,12 @@ app.get('/tmdb', async (req, res) => {
       return res.status(400).json({ error: 'Missing required parameter "url"' });
     }
     
-    // Собираем остальные параметры запроса
+   
     const searchParams = new URLSearchParams(params);
     searchParams.set('api_key', process.env.TMDB_API_KEY);
     
     const fullUrl = `https://api.themoviedb.org/3${url}?${searchParams.toString()}`;
-    console.log('Full URL:', fullUrl); // Для отладки
+    console.log('Full URL:', fullUrl); 
     
     const response = await fetch(fullUrl);
     const data = await response.json();
