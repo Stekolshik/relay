@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 
-// CORS
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -13,7 +13,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 🔹 API прокси
+
 app.get("/tmdb", async (req, res) => {
   try {
     const { url, ...params } = req.query;
@@ -38,13 +38,13 @@ app.get("/tmdb", async (req, res) => {
   }
 });
 
-// 🔹 Прокси для изображений
+
 app.get("/image", async (req, res) => {
   try {
     const { path } = req.query;
     if (!path) return res.status(400).json({ error: "Missing image path" });
 
-    // path должен быть вида "/w500/abc.jpg" или "/original/abc.jpg"
+
     const imageUrl = `https://image.tmdb.org/t/p${path}`;
     console.log("Image URL:", imageUrl);
 
@@ -65,3 +65,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🔁 TMDb proxy server запущен на порту ${PORT}`);
 });
+
