@@ -126,7 +126,8 @@ app.get("/new-user", (req, res) => {
 });
 
 // ====== Запуск ======
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🔁 TMDb proxy server + ratings запущен на порту ${PORT}`);
 });
+
