@@ -8,13 +8,13 @@ import crypto from "crypto";
 dotenv.config();
 const app = express();
 
-// JSON body parser для POST-запросов
+// JSON body parser для POST/DELETE-запросов
 app.use(express.json());
 
 // CORS
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
@@ -92,12 +92,12 @@ app.get("/ratings", async (req, res) => {
   }
 });
 
-// Сохранить/обновить оценку
+// Сохранить/обновить или удалить оценку
 app.post("/ratings", async (req, res) => {
   try {
     const { user_id, movie_id, user_rating } = req.body;
-    if (!user_id || !movie_id || typeof user_rating !== "number") {
-      return res.status(400).json({ error: "Invalid payload" });
+    if (!user_id || !movie_id) {
+      return res.status(400).json({ error: "Missing user_id or movie_id" });
     }
 
     let data = {};
@@ -109,13 +109,48 @@ app.post("/ratings", async (req, res) => {
     }
 
     if (!data[user_id]) data[user_id] = {};
-    data[user_id][movie_id] = { user_rating };
+
+    if (typeof user_rating === "number") {
+      // сохранить рейтинг
+      data[user_id][movie_id] = { user_rating };
+    } else {
+      // удалить рейтинг
+      delete data[user_id][movie_id];
+    }
 
     await fs.writeFile(RATINGS_FILE, JSON.stringify(data, null, 2));
     res.json({ success: true });
   } catch (err) {
     console.error("Ошибка записи рейтингов:", err.message);
     res.status(500).json({ error: "Ratings write failed", details: err.message });
+  }
+});
+
+// Удалить оценку через DELETE
+app.delete("/ratings", async (req, res) => {
+  try {
+    const { user_id, movie_id } = req.body;
+    if (!user_id || !movie_id) {
+      return res.status(400).json({ error: "Missing user_id or movie_id" });
+    }
+
+    let data = {};
+    try {
+      const raw = await fs.readFile(RATINGS_FILE, "utf-8");
+      data = JSON.parse(raw);
+    } catch {
+      data = {};
+    }
+
+    if (data[user_id] && data[user_id][movie_id]) {
+      delete data[user_id][movie_id];
+      await fs.writeFile(RATINGS_FILE, JSON.stringify(data, null, 2));
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Ошибка удаления рейтинга:", err.message);
+    res.status(500).json({ error: "Ratings delete failed", details: err.message });
   }
 });
 
@@ -130,4 +165,3 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🔁 TMDb proxy server + ratings запущен на порту ${PORT}`);
 });
-
